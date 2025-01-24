@@ -11,9 +11,15 @@ type Config struct {
 	} `json:"http"`
 	LogLevel string `json:"log_level"`
 }
-type ConfigPath string
+type ConfigPathType string
 
-func NewConfig(path ConfigPath) *Config {
+var CnfPath ConfigPathType
+
+func StaticPath() ConfigPathType {
+	return CnfPath
+}
+
+func NewConfig(path ConfigPathType) Config {
 	// read from filepath
 	filePath := string(path)
 	data, err := os.ReadFile(filePath)
@@ -27,5 +33,5 @@ func NewConfig(path ConfigPath) *Config {
 		panic(err)
 	}
 
-	return &cfg
+	return cfg
 }

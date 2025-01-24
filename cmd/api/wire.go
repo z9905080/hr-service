@@ -8,8 +8,8 @@ import (
 	"github.com/google/wire"
 )
 
-func Initialize(ctx context.Context) (*App, func(), error) {
-	wire.Build(wire.Struct(new(App), "*"),
-		ProviderSet)
-	return &App{}, nil, nil
+func Initialize(ctx context.Context) (*App, error) {
+	wire.Build(ProviderSet)
+
+	return &App{}, nil
 }
