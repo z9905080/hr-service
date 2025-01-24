@@ -278,8 +278,10 @@ func (u *usecase) EmployeeAdd(ctx context.Context, cmd CmdEmployeeAdd) (EventEmp
 		}}, err
 }
 
-func NewUsecase(employeeRepo repository.EmployeeRepository) InfAPIUsecase {
+func NewUsecase(employeeRepo repository.EmployeeRepository, departmentRepo repository.DepartmentRepository, log logger.InfLogger) InfAPIUsecase {
 	return &usecase{
-		employeeRepo: employeeRepo,
+		employeeRepo:   employeeRepo,
+		departmentRepo: departmentRepo,
+		log:            log,
 	}
 }
