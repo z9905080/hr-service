@@ -10,7 +10,17 @@ type Config struct {
 		Port string `json:"port"`
 	} `json:"http"`
 	LogLevel string `json:"log_level"`
+	DB       struct {
+		User           string `json:"user"`
+		Password       string `json:"password"`
+		InstanceName   string `json:"instance_name"`
+		Database       string `json:"database"`
+		ConnectTimeout string `json:"connect_timeout"`
+		ReadTimeout    string `json:"read_timeout"`
+		WriteTimeout   string `json:"write_timeout"`
+	} `json:"db"`
 }
+
 type ConfigPathType string
 
 var CnfPath ConfigPathType

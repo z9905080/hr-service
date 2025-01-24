@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - TZ=Asia/Taipei
+    command:
+      - "api"
+      - "--config=./environment/local.json"
+    networks:
+      - mynet
+
+  db:
+    image: mysql:9.2.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hr_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: ispassword
+    networks:
+      - mynet

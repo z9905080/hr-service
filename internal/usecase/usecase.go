@@ -443,7 +443,7 @@ func (u *usecase) AttendanceStatistics(ctx context.Context, cmd CmdAttendanceSta
 		return EventAttendanceStatistics{}, err
 	}
 
-	attendanceStatistic, err := u.attendanceRepo.AttendanceStatistic(cmd.EmployeeIDList)
+	attendanceStatistic, err := u.attendanceRepo.AttendanceStatistic(cmd.EmployeeIDList, cmd.TimeStart, cmd.TimeEnd)
 	if err != nil {
 		return EventAttendanceStatistics{}, err
 	}

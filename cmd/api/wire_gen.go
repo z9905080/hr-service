@@ -8,11 +8,31 @@ package api
 
 import (
 	"context"
+	"github.com/z9905080/hr_service/environment"
+	"github.com/z9905080/hr_service/internal/implement/department_impl"
+	"github.com/z9905080/hr_service/internal/implement/employee_impl"
+	"github.com/z9905080/hr_service/internal/infra"
+	"github.com/z9905080/hr_service/internal/interface/adapter"
+	"github.com/z9905080/hr_service/internal/interface/handler"
+	"github.com/z9905080/hr_service/internal/usecase"
+	"github.com/z9905080/hr_service/pkg/logger"
 )
 
 // Injectors from wire.go:
 
 func Initialize(ctx context.Context) (*App, error) {
-	app := &App{}
+	configPathType := environment.StaticPath()
+	config := environment.NewConfig(configPathType)
+	db, err := infra.NewGormDB(config)
+	if err != nil {
+		return nil, err
+	}
+	employeeRepository := employee_impl.NewEmployeeImpl(db)
+	departmentRepository := department_impl.NewDepartmentImpl(db)
+	infLogger := logger.NewLogger(config)
+	infAPIUsecase := usecase.NewUsecase(employeeRepository, departmentRepository, infLogger)
+	srvHandler := handler.NewGinHandler(infAPIUsecase)
+	httpHandler := adapter.NewHTTPAdapter(srvHandler)
+	app := NewApp(httpHandler, config)
 	return app, nil
 }

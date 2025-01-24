@@ -6,6 +6,7 @@ import (
 	attendanceImpl "github.com/z9905080/hr_service/internal/implement/attendance_impl"
 	departmentImpl "github.com/z9905080/hr_service/internal/implement/department_impl"
 	employeeImpl "github.com/z9905080/hr_service/internal/implement/employee_impl"
+	"github.com/z9905080/hr_service/internal/infra"
 	"github.com/z9905080/hr_service/internal/interface/adapter"
 	"github.com/z9905080/hr_service/internal/interface/handler"
 	"github.com/z9905080/hr_service/internal/usecase"
@@ -24,4 +25,5 @@ var ProviderSet = wire.NewSet(
 	employeeImpl.NewEmployeeImpl,
 	departmentImpl.NewDepartmentImpl,
 	attendanceImpl.NewAttendanceImpl,
+	infra.NewGormDB,
 )
