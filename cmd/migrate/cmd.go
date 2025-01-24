@@ -1,4 +1,4 @@
-package api
+package migrate
 
 import (
 	gormigrate "github.com/go-gormigrate/gormigrate/v2"

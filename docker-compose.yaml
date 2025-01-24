@@ -24,3 +24,8 @@ services:
       MYSQL_PASSWORD: ispassword
     networks:
       - mynet
+    ports:
+      - "3307:3306"
+
+networks:
+  mynet:

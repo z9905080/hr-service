@@ -27,8 +27,11 @@ func NewGormDB(config environment.Config) (*gorm.DB, error) {
 }
 
 func getDialector(cfg environment.Config) gorm.Dialector {
-	return mysql.Open(fmt.Sprintf(
-		"%s:%s@unix(/cloudsql/%s)/%s?charset=utf8mb4&parseTime=true&loc=UTC&time_zone=UTC&timeout=%s&readTimeout=%s&writeTimeout=%s",
-		cfg.DB.User, cfg.DB.Password, cfg.DB.InstanceName, cfg.DB.Database, cfg.DB.ConnectTimeout, cfg.DB.ReadTimeout, cfg.DB.WriteTimeout,
-	))
+	// dsn => user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local
+	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=true&loc=UTC&timeout=%s&readTimeout=%s&writeTimeout=%s",
+		cfg.DB.User, cfg.DB.Password, cfg.DB.Host, cfg.DB.Database, cfg.DB.ConnectTimeout, cfg.DB.ReadTimeout, cfg.DB.WriteTimeout)
+
+	fmt.Println(dsn)
+
+	return mysql.Open(dsn)
 }

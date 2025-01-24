@@ -1,5 +1,5 @@
 # build stage
-FROM golang:1.22-alpine3.19 AS build-env
+FROM golang:1.23-alpine3.19 AS build-env
 RUN apk update && apk upgrade && apk add --no-cache bash git openssh g++ glib-static
 
 ARG VERSION

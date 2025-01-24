@@ -13,7 +13,7 @@ type Config struct {
 	DB       struct {
 		User           string `json:"user"`
 		Password       string `json:"password"`
-		InstanceName   string `json:"instance_name"`
+		Host           string `json:"host"`
 		Database       string `json:"database"`
 		ConnectTimeout string `json:"connect_timeout"`
 		ReadTimeout    string `json:"read_timeout"`

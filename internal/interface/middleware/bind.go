@@ -28,9 +28,39 @@ func (c *C) GetQuery(key string) string {
 }
 
 func (c *C) BindJSON(obj interface{}) error {
-	return c.c.BindJSON(obj)
+
+	// bind uri
+	if err := c.c.ShouldBindUri(obj); err != nil {
+		return err
+	}
+
+	// bind json
+	if err := c.c.ShouldBindJSON(obj); err != nil {
+		return err
+	}
+
+	return nil
 }
 
+func (c *C) BindQuery(obj interface{}) error {
+
+	// bind query
+	if err := c.c.ShouldBindQuery(obj); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *C) BindUri(obj interface{}) error {
+
+	// bind uri
+	if err := c.c.ShouldBindUri(obj); err != nil {
+		return err
+	}
+
+	return nil
+}
 func (c *C) FormatRespOK(data interface{}) {
 	c.c.JSON(http.StatusOK, generateResponse(data, http.StatusOK, "OK"))
 }

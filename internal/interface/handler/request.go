@@ -8,7 +8,7 @@ type EmployeeAddReq struct {
 }
 
 type EmployeeQueryReq struct {
-	EmployeeID int `json:"employee_id"`
+	EmployeeID int `json:"employee_id" uri:"id"`
 }
 
 type EmployeeUpdateReq struct {

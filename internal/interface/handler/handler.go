@@ -89,3 +89,22 @@ func (h *SrvHandler) UpdateEmployee(c *middleware.C) {
 
 	c.FormatRespOK(data)
 }
+
+func (h *SrvHandler) DeleteEmployee(c *middleware.C) {
+	var req EmployeeQueryReq
+	if err := c.BindJSON(&req); err != nil {
+		c.FormatRespError(400, err.Error())
+		return
+	}
+
+	result, err := h.apiUsecase.EmployeeDelete(c.GetCtx().Request.Context(), usecase.CmdEmployeeDelete{
+		EmployeeID: req.EmployeeID,
+	})
+
+	if err != nil {
+		c.FormatRespError(500, err.Error())
+		return
+	}
+
+	c.FormatRespOK(result)
+}
