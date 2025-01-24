@@ -11,6 +11,24 @@ type employeeImpl struct {
 	db *gorm.DB
 }
 
+func (e *employeeImpl) ListEmployee(limit int, page int, field string, order string) ([]entity.Employee, error) {
+	var employeePo []po.EmployeePo
+
+	db := e.db
+	if field != "" && order != "" {
+		db = db.Order(field + " " + order)
+	}
+	if err := db.Limit(limit).Offset((page - 1) * limit).Find(&employeePo).Error; err != nil {
+		return nil, err
+	}
+
+	var employees []entity.Employee
+	for _, v := range employeePo {
+		employees = append(employees, v.ToEntity())
+	}
+	return employees, nil
+}
+
 func (e *employeeImpl) AddEmployee(employee entity.Employee) (entity.Employee, error) {
 	employeePo := po.NewEmployeePo(employee)
 	if err := e.db.Create(employeePo).Error; err != nil {

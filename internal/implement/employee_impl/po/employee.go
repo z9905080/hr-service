@@ -27,7 +27,7 @@ func NewEmployeePo(e entity.Employee) *EmployeePo {
 			ID: uint(e.ID),
 		},
 		Name:  e.Name,
-		Birth: e.Birth,
+		Birth: time.Time(e.Birth),
 		Role:  e.Role,
 		Email: e.Email,
 	}
@@ -37,7 +37,7 @@ func (e *EmployeePo) ToEntity() entity.Employee {
 	return entity.Employee{
 		ID:    int(e.ID),
 		Name:  e.Name,
-		Birth: e.Birth,
+		Birth: entity.DateType(e.Birth),
 		Role:  e.Role,
 		Email: e.Email,
 	}

@@ -1,5 +1,7 @@
 package usecase
 
+import "time"
+
 type EventPagination struct {
 	Page      int `json:"page"`
 	Limit     int `json:"limit"`
@@ -63,4 +65,101 @@ type EventDepartmentDeleted struct {
 type EventDepartmentListed struct {
 	DepartmentList []EventDepartment `json:"department_list"`
 	Pagination     EventPagination   `json:"pagination"`
+}
+
+type EventAttendance struct {
+	AttendanceID  int           `json:"attendance_id"`
+	EmployeeInfo  EventEmployee `json:"employee_info"`
+	AttendanceIn  time.Time     `json:"attendance_in"`
+	AttendanceOut *time.Time    `json:"attendance_out"`
+}
+
+type EventAttendanceAdded struct {
+	EventAttendance
+}
+
+type EventAttendanceQueried struct {
+	EventAttendance
+}
+
+type EventAttendanceUpdated struct {
+	EventAttendance
+}
+
+type EventAttendanceDeleted struct {
+	AttendanceID int `json:"attendance_id"`
+	Status       string
+}
+
+type EventAttendanceListed struct {
+	AttendanceList []EventAttendance `json:"attendance_list"`
+	Pagination     EventPagination   `json:"pagination"`
+}
+
+type EventOvertime struct {
+	OvertimeID    int           `json:"overtime_id"`
+	EmployeeInfo  EventEmployee `json:"employee_info"`
+	OvertimeStart time.Time     `json:"overtime_start"`
+	OvertimeEnd   time.Time     `json:"overtime_end"`
+}
+
+type EventOvertimeAdded struct {
+	EventOvertime
+}
+
+type EventOvertimeQueried struct {
+	EventOvertime
+}
+
+type EventOvertimeUpdated struct {
+	EventOvertime
+}
+
+type EventOvertimeDeleted struct {
+	OvertimeID int    `json:"overtime_id"`
+	Status     string `json:"status"`
+}
+
+type EventOvertimeListed struct {
+	OvertimeList []EventOvertime `json:"overtime_list"`
+	Pagination   EventPagination `json:"pagination"`
+}
+
+type EventLeave struct {
+	LeaveID      int           `json:"leave_id"`
+	EmployeeInfo EventEmployee `json:"employee_info"`
+	LeaveStart   time.Time     `json:"leave_start"`
+	LeaveEnd     time.Time     `json:"leave_end"`
+}
+
+type EventLeaveAdded struct {
+	EventLeave
+}
+
+type EventLeaveQueried struct {
+	EventLeave
+}
+
+type EventLeaveUpdated struct {
+	EventLeave
+}
+
+type EventLeaveDeleted struct {
+	LeaveID int    `json:"leave_id"`
+	Status  string `json:"status"`
+}
+
+type EventLeaveListed struct {
+	LeaveList  []EventLeave    `json:"leave_list"`
+	Pagination EventPagination `json:"pagination"`
+}
+
+type EventEmployeeAttendanceStatistics struct {
+	TotalAttendance int `json:"total_attendance"`
+	TotalOvertime   int `json:"total_overtime"`
+	TotalLeave      int `json:"total_leave"`
+}
+
+type EventAttendanceStatistics struct {
+	EmployeeAttendanceStatistics map[int]EventEmployeeAttendanceStatistics `json:"employee_attendance_statistics"` // key is employee id
 }

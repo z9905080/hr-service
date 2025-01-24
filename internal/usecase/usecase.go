@@ -11,7 +11,455 @@ import (
 type usecase struct {
 	employeeRepo   repository.EmployeeRepository
 	departmentRepo repository.DepartmentRepository
+	attendanceRepo repository.AttendanceRepository
 	log            logger.InfLogger
+}
+
+func (u *usecase) AttendanceAdd(ctx context.Context, cmd CmdAttendanceAdd) (EventAttendanceAdded, error) {
+	if err := cmd.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "AttendanceAdd: %v", err)
+		return EventAttendanceAdded{}, err
+	}
+
+	e := entity.Attendance{
+		EmployeeID:      cmd.EmployeeID,
+		AttendanceStart: cmd.AttendanceStart,
+		AttendanceEnd:   cmd.AttendanceEnd,
+	}
+
+	result, err := u.attendanceRepo.AddAttendance(e)
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "AttendanceAdd: %v", err)
+		return EventAttendanceAdded{}, err
+	}
+
+	return EventAttendanceAdded{
+		EventAttendance: EventAttendance{
+			AttendanceID:  result.ID,
+			EmployeeInfo:  DtoEmployeeEntityToEvent(result.EmployeeInfo),
+			AttendanceIn:  result.AttendanceStart,
+			AttendanceOut: result.AttendanceEnd,
+		},
+	}, nil
+}
+
+func (u *usecase) AttendanceQuery(ctx context.Context, cmd CmdAttendanceQuery) (EventAttendanceQueried, error) {
+	if err := cmd.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "AttendanceQuery: %v", err)
+		return EventAttendanceQueried{}, err
+	}
+
+	data, err := u.attendanceRepo.QueryAttendance(entity.Attendance{ID: cmd.AttendanceID})
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "AttendanceQuery: %v", err)
+		return EventAttendanceQueried{}, err
+	}
+
+	return EventAttendanceQueried{
+		EventAttendance: EventAttendance{
+			AttendanceID:  data.ID,
+			EmployeeInfo:  DtoEmployeeEntityToEvent(data.EmployeeInfo),
+			AttendanceIn:  data.AttendanceStart,
+			AttendanceOut: data.AttendanceEnd,
+		},
+	}, nil
+}
+
+func (u *usecase) AttendanceUpdate(ctx context.Context, cmd CmdAttendanceUpdate) (EventAttendanceUpdated, error) {
+	if err := cmd.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "AttendanceUpdate: %v", err)
+		return EventAttendanceUpdated{}, err
+	}
+
+	attendanceData := entity.AttendanceUpdate{
+		ID:              cmd.AttendanceID,
+		EmployeeID:      cmd.EmployeeID,
+		AttendanceStart: cmd.AttendanceStart,
+		AttendanceEnd:   cmd.AttendanceEnd,
+	}
+
+	data, err := u.attendanceRepo.UpdateAttendance(attendanceData)
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "AttendanceUpdate: %v", err)
+		return EventAttendanceUpdated{}, err
+	}
+
+	return EventAttendanceUpdated{
+		EventAttendance: EventAttendance{
+			AttendanceID:  data.ID,
+			EmployeeInfo:  DtoEmployeeEntityToEvent(data.EmployeeInfo),
+			AttendanceIn:  data.AttendanceStart,
+			AttendanceOut: data.AttendanceEnd,
+		},
+	}, nil
+
+}
+
+func (u *usecase) AttendanceDelete(ctx context.Context, cmd CmdAttendanceDelete) (EventAttendanceDeleted, error) {
+	if err := cmd.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "AttendanceDelete: %v", err)
+		return EventAttendanceDeleted{}, err
+	}
+
+	err := u.attendanceRepo.DeleteAttendance(entity.Attendance{ID: cmd.AttendanceID})
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "AttendanceDelete: %v", err)
+		return EventAttendanceDeleted{}, err
+	}
+
+	return EventAttendanceDeleted{
+		AttendanceID: cmd.AttendanceID,
+		Status:       "deleted",
+	}, nil
+}
+
+func (u *usecase) AttendanceList(ctx context.Context, cmd CmdAttendanceList) (EventAttendanceListed, error) {
+	if err := cmd.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "AttendanceList: %v", err)
+		return EventAttendanceListed{}, err
+	}
+
+	data, err := u.attendanceRepo.ListAttendance(cmd.EmployeeID, cmd.Pagination.Limit, cmd.Pagination.Page, cmd.Sorter.Field, cmd.Sorter.Order)
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "AttendanceList: %v", err)
+		return EventAttendanceListed{}, err
+	}
+
+	var list []EventAttendance
+	for _, v := range data {
+		list = append(list, EventAttendance{
+			AttendanceID:  v.ID,
+			EmployeeInfo:  DtoEmployeeEntityToEvent(v.EmployeeInfo),
+			AttendanceIn:  v.AttendanceStart,
+			AttendanceOut: v.AttendanceEnd,
+		})
+	}
+
+	return EventAttendanceListed{
+		AttendanceList: list,
+		Pagination: EventPagination{
+			Page:      cmd.Pagination.Page,
+			Limit:     cmd.Pagination.Limit,
+			Total:     0, // TODO: implement total count
+			TotalPage: 0, // TODO: implement total page
+		},
+	}, nil
+}
+
+func (u *usecase) OvertimeAdd(ctx context.Context, cmd CmdOvertimeAdd) (EventOvertimeAdded, error) {
+	if err := cmd.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "OvertimeAdd: %v", err)
+		return EventOvertimeAdded{}, err
+	}
+
+	e := entity.Overtime{
+		EmployeeID:    cmd.EmployeeID,
+		OvertimeStart: cmd.OvertimeStart,
+		OvertimeEnd:   cmd.OvertimeEnd,
+	}
+
+	result, err := u.attendanceRepo.AddOvertime(e)
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "OvertimeAdd: %v", err)
+		return EventOvertimeAdded{}, err
+	}
+
+	return EventOvertimeAdded{
+		EventOvertime: EventOvertime{
+			OvertimeID:    result.ID,
+			EmployeeInfo:  DtoEmployeeEntityToEvent(result.EmployeeInfo),
+			OvertimeStart: result.OvertimeStart,
+			OvertimeEnd:   result.OvertimeEnd,
+		},
+	}, nil
+}
+
+func (u *usecase) OvertimeQuery(ctx context.Context, cmd CmdOvertimeQuery) (EventOvertimeQueried, error) {
+	if err := cmd.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "OvertimeQuery: %v", err)
+		return EventOvertimeQueried{}, err
+	}
+
+	data, err := u.attendanceRepo.QueryOvertime(entity.Overtime{ID: cmd.OvertimeID})
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "OvertimeQuery: %v", err)
+		return EventOvertimeQueried{}, err
+	}
+
+	return EventOvertimeQueried{
+		EventOvertime: EventOvertime{
+			OvertimeID:    data.ID,
+			EmployeeInfo:  DtoEmployeeEntityToEvent(data.EmployeeInfo),
+			OvertimeStart: data.OvertimeStart,
+			OvertimeEnd:   data.OvertimeEnd,
+		},
+	}, nil
+}
+
+func (u *usecase) OvertimeUpdate(ctx context.Context, cmd CmdOvertimeUpdate) (EventOvertimeUpdated, error) {
+	if err := cmd.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "OvertimeUpdate: %v", err)
+		return EventOvertimeUpdated{}, err
+	}
+
+	overtimeData := entity.OvertimeUpdate{
+		ID:            cmd.OvertimeID,
+		EmployeeID:    cmd.EmployeeID,
+		OvertimeStart: cmd.OvertimeStart,
+		OvertimeEnd:   cmd.OvertimeEnd,
+	}
+
+	data, err := u.attendanceRepo.UpdateOvertime(overtimeData)
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "OvertimeUpdate: %v", err)
+		return EventOvertimeUpdated{}, err
+	}
+
+	return EventOvertimeUpdated{
+		EventOvertime: EventOvertime{
+			OvertimeID:    data.ID,
+			EmployeeInfo:  DtoEmployeeEntityToEvent(data.EmployeeInfo),
+			OvertimeStart: data.OvertimeStart,
+			OvertimeEnd:   data.OvertimeEnd,
+		},
+	}, nil
+}
+
+func (u *usecase) OvertimeDelete(ctx context.Context, cmd CmdOvertimeDelete) (EventOvertimeDeleted, error) {
+	if err := cmd.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "OvertimeDelete: %v", err)
+		return EventOvertimeDeleted{}, err
+	}
+
+	err := u.attendanceRepo.DeleteOvertime(entity.Overtime{ID: cmd.OvertimeID})
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "OvertimeDelete: %v", err)
+		return EventOvertimeDeleted{}, err
+	}
+
+	return EventOvertimeDeleted{
+		OvertimeID: cmd.OvertimeID,
+		Status:     "deleted",
+	}, nil
+}
+
+func (u *usecase) OvertimeList(ctx context.Context, cmd CmdOvertimeList) (EventOvertimeListed, error) {
+	if err := cmd.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "OvertimeList: %v", err)
+		return EventOvertimeListed{}, err
+	}
+
+	data, err := u.attendanceRepo.ListOvertime(cmd.EmployeeID, cmd.Pagination.Limit, cmd.Pagination.Page, cmd.Sorter.Field, cmd.Sorter.Order)
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "OvertimeList: %v", err)
+		return EventOvertimeListed{}, err
+	}
+
+	var list []EventOvertime
+	for _, v := range data {
+		list = append(list, EventOvertime{
+			OvertimeID:    v.ID,
+			EmployeeInfo:  DtoEmployeeEntityToEvent(v.EmployeeInfo),
+			OvertimeStart: v.OvertimeStart,
+			OvertimeEnd:   v.OvertimeEnd,
+		})
+	}
+
+	return EventOvertimeListed{
+		OvertimeList: list,
+		Pagination: EventPagination{
+			Page:      cmd.Pagination.Page,
+			Limit:     cmd.Pagination.Limit,
+			Total:     0, // TODO: implement total count
+			TotalPage: 0, // TODO: implement total page
+		},
+	}, nil
+}
+
+func (u *usecase) LeaveAdd(ctx context.Context, cmd CmdLeaveAdd) (EventLeaveAdded, error) {
+	if err := cmd.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "LeaveAdd: %v", err)
+		return EventLeaveAdded{}, err
+	}
+
+	e := entity.Leave{
+		EmployeeID: cmd.EmployeeID,
+		LeaveStart: cmd.LeaveStart,
+		LeaveEnd:   cmd.LeaveEnd,
+	}
+
+	result, err := u.attendanceRepo.AddLeave(e)
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "LeaveAdd: %v", err)
+		return EventLeaveAdded{}, err
+	}
+
+	return EventLeaveAdded{
+		EventLeave: EventLeave{
+			LeaveID:      result.ID,
+			EmployeeInfo: DtoEmployeeEntityToEvent(result.EmployeeInfo),
+			LeaveStart:   result.LeaveStart,
+			LeaveEnd:     result.LeaveEnd,
+		},
+	}, nil
+}
+
+func (u *usecase) LeaveQuery(ctx context.Context, cmd CmdLeaveQuery) (EventLeaveQueried, error) {
+	if err := cmd.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "LeaveQuery: %v", err)
+		return EventLeaveQueried{}, err
+	}
+
+	data, err := u.attendanceRepo.QueryLeave(entity.Leave{ID: cmd.LeaveID})
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "LeaveQuery: %v", err)
+		return EventLeaveQueried{}, err
+	}
+
+	return EventLeaveQueried{
+		EventLeave: EventLeave{
+			LeaveID:      data.ID,
+			EmployeeInfo: DtoEmployeeEntityToEvent(data.EmployeeInfo),
+			LeaveStart:   data.LeaveStart,
+			LeaveEnd:     data.LeaveEnd,
+		},
+	}, nil
+}
+
+func (u *usecase) LeaveUpdate(ctx context.Context, cmd CmdLeaveUpdate) (EventLeaveUpdated, error) {
+	if err := cmd.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "LeaveUpdate: %v", err)
+		return EventLeaveUpdated{}, err
+	}
+
+	leaveData := entity.LeaveUpdate{
+		ID:         cmd.LeaveID,
+		EmployeeID: cmd.EmployeeID,
+		LeaveStart: cmd.LeaveStart,
+		LeaveEnd:   cmd.LeaveEnd,
+	}
+
+	data, err := u.attendanceRepo.UpdateLeave(leaveData)
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "LeaveUpdate: %v", err)
+		return EventLeaveUpdated{}, err
+	}
+
+	return EventLeaveUpdated{
+		EventLeave: EventLeave{
+			LeaveID:      data.ID,
+			EmployeeInfo: DtoEmployeeEntityToEvent(data.EmployeeInfo),
+			LeaveStart:   data.LeaveStart,
+			LeaveEnd:     data.LeaveEnd,
+		},
+	}, nil
+}
+
+func (u *usecase) LeaveDelete(ctx context.Context, cmd CmdLeaveDelete) (EventLeaveDeleted, error) {
+	if err := cmd.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "LeaveDelete: %v", err)
+		return EventLeaveDeleted{}, err
+	}
+
+	err := u.attendanceRepo.DeleteLeave(entity.Leave{ID: cmd.LeaveID})
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "LeaveDelete: %v", err)
+		return EventLeaveDeleted{}, err
+	}
+
+	return EventLeaveDeleted{
+		LeaveID: cmd.LeaveID,
+		Status:  "deleted",
+	}, nil
+}
+
+func (u *usecase) LeaveList(ctx context.Context, cmd CmdLeaveList) (EventLeaveListed, error) {
+	if err := cmd.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "LeaveList: %v", err)
+		return EventLeaveListed{}, err
+	}
+
+	data, err := u.attendanceRepo.ListLeave(cmd.EmployeeID, cmd.Pagination.Limit, cmd.Pagination.Page, cmd.Sorter.Field, cmd.Sorter.Order)
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "LeaveList: %v", err)
+		return EventLeaveListed{}, err
+	}
+
+	var list []EventLeave
+	for _, v := range data {
+		list = append(list, EventLeave{
+			LeaveID:      v.ID,
+			EmployeeInfo: DtoEmployeeEntityToEvent(v.EmployeeInfo),
+			LeaveStart:   v.LeaveStart,
+			LeaveEnd:     v.LeaveEnd,
+		})
+	}
+
+	return EventLeaveListed{
+		LeaveList: list,
+		Pagination: EventPagination{
+			Page:      cmd.Pagination.Page,
+			Limit:     cmd.Pagination.Limit,
+			Total:     0, // TODO: implement total count
+			TotalPage: 0, // TODO: implement total page
+		},
+	}, nil
+}
+
+func (u *usecase) AttendanceStatistics(ctx context.Context, cmd CmdAttendanceStatistics) (EventAttendanceStatistics, error) {
+	if err := cmd.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "AttendanceStatistics: %v", err)
+		return EventAttendanceStatistics{}, err
+	}
+
+	attendanceStatistic, err := u.attendanceRepo.AttendanceStatistic(cmd.EmployeeIDList)
+	if err != nil {
+		return EventAttendanceStatistics{}, err
+	}
+
+	result := make(map[int]EventEmployeeAttendanceStatistics)
+	for k, v := range attendanceStatistic.AttendanceEmployeeStatistics {
+		result[k] = EventEmployeeAttendanceStatistics{
+			TotalAttendance: v.TotalAttendance,
+			TotalOvertime:   v.TotalOvertime,
+			TotalLeave:      v.TotalLeave,
+		}
+	}
+
+	return EventAttendanceStatistics{
+		EmployeeAttendanceStatistics: result,
+	}, nil
 }
 
 func (u *usecase) DepartmentAdd(ctx context.Context, department CmdDepartmentAdd) (EventDepartmentAdded, error) {
@@ -148,7 +596,7 @@ func (u *usecase) EmployeeList(ctx context.Context, employeeList CmdEmployeeList
 		list = append(list, EventEmployee{
 			EmployeeID:    v.ID,
 			EmployeeName:  v.Name,
-			EmployeeBirth: v.Birth.Format("2006-01-02"),
+			EmployeeBirth: v.Birth.String(),
 			EmployeeRole:  v.Role,
 			EmployeeEmail: v.Email,
 		})
@@ -212,7 +660,7 @@ func (u *usecase) EmployeeUpdate(ctx context.Context, cmd CmdEmployeeUpdate) (Ev
 		EventEmployee: EventEmployee{
 			EmployeeID:    data.ID,
 			EmployeeName:  data.Name,
-			EmployeeBirth: data.Birth.Format("2006-01-02"),
+			EmployeeBirth: data.Birth.String(),
 			EmployeeRole:  data.Role,
 			EmployeeEmail: data.Email,
 		},
@@ -236,7 +684,7 @@ func (u *usecase) EmployeeQuery(ctx context.Context, employeeID CmdEmployeeQuery
 		EventEmployee: EventEmployee{
 			EmployeeID:    data.ID,
 			EmployeeName:  data.Name,
-			EmployeeBirth: data.Birth.Format("2006-01-02"),
+			EmployeeBirth: data.Birth.String(),
 			EmployeeRole:  data.Role,
 			EmployeeEmail: data.Email,
 		},
@@ -253,10 +701,10 @@ func (u *usecase) EmployeeAdd(ctx context.Context, cmd CmdEmployeeAdd) (EventEmp
 
 	employee := entity.Employee{
 		Name: cmd.EmployeeName,
-		Birth: func() time.Time {
+		Birth: func() entity.DateType {
 			// ignore error because it's already validated
 			t, _ := time.Parse("2006-01-02", cmd.EmployeeBirth)
-			return t
+			return entity.DateType(t)
 		}(),
 		Role:  cmd.EmployeeRole,
 		Email: cmd.EmployeeEmail,
@@ -272,7 +720,7 @@ func (u *usecase) EmployeeAdd(ctx context.Context, cmd CmdEmployeeAdd) (EventEmp
 		EventEmployee: EventEmployee{
 			EmployeeID:    data.ID,
 			EmployeeName:  data.Name,
-			EmployeeBirth: data.Birth.Format("2006-01-02"),
+			EmployeeBirth: data.Birth.String(),
 			EmployeeRole:  data.Role,
 			EmployeeEmail: data.Email,
 		}}, err

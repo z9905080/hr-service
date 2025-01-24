@@ -12,8 +12,6 @@ import "context"
 // - Attendance record registration and query
 // - Overtime application and approval
 // - Leave application and approval
-// - Business trip management
-// - Attendance anomaly alerts
 // - Attendance statistics reports
 
 // Payroll Management
@@ -24,6 +22,7 @@ import "context"
 // - Payroll slip generation
 // - Payroll transfer data export
 
+// TODO: nice to have
 // Performance Management
 // - Assessment item setup
 // - Assessment process management
@@ -34,6 +33,7 @@ import "context"
 type InfAPIUsecase interface {
 	infEmployeeUC
 	infDepartmentUC
+	infAttendanceUC
 }
 
 type infEmployeeUC interface {
@@ -71,4 +71,54 @@ type infDepartmentUC interface {
 
 	// DepartmentList is an usecase to list department
 	DepartmentList(ctx context.Context, departmentList CmdDepartmentList) (EventDepartmentListed, error)
+}
+
+type infAttendanceUC interface {
+	// AttendanceAdd is an usecase to add attendance
+	AttendanceAdd(ctx context.Context, cmd CmdAttendanceAdd) (EventAttendanceAdded, error)
+
+	// AttendanceQuery is an usecase to query attendance
+	AttendanceQuery(ctx context.Context, cmd CmdAttendanceQuery) (EventAttendanceQueried, error)
+
+	// AttendanceUpdate is an usecase to update attendance
+	AttendanceUpdate(ctx context.Context, cmd CmdAttendanceUpdate) (EventAttendanceUpdated, error)
+
+	// AttendanceDelete is an usecase to delete attendance
+	AttendanceDelete(ctx context.Context, cmd CmdAttendanceDelete) (EventAttendanceDeleted, error)
+
+	// AttendanceList is an usecase to list attendance
+	AttendanceList(ctx context.Context, cmd CmdAttendanceList) (EventAttendanceListed, error)
+
+	// OvertimeAdd is an usecase to add overtime
+	OvertimeAdd(ctx context.Context, cmd CmdOvertimeAdd) (EventOvertimeAdded, error)
+
+	// OvertimeQuery is an usecase to query overtime
+	OvertimeQuery(ctx context.Context, cmd CmdOvertimeQuery) (EventOvertimeQueried, error)
+
+	// OvertimeUpdate is an usecase to update overtime
+	OvertimeUpdate(ctx context.Context, cmd CmdOvertimeUpdate) (EventOvertimeUpdated, error)
+
+	// OvertimeDelete is an usecase to delete overtime
+	OvertimeDelete(ctx context.Context, cmd CmdOvertimeDelete) (EventOvertimeDeleted, error)
+
+	// OvertimeList is an usecase to list overtime
+	OvertimeList(ctx context.Context, cmd CmdOvertimeList) (EventOvertimeListed, error)
+
+	// LeaveAdd is an usecase to add leave
+	LeaveAdd(ctx context.Context, cmd CmdLeaveAdd) (EventLeaveAdded, error)
+
+	// LeaveQuery is an usecase to query leave
+	LeaveQuery(ctx context.Context, cmd CmdLeaveQuery) (EventLeaveQueried, error)
+
+	// LeaveUpdate is an usecase to update leave
+	LeaveUpdate(ctx context.Context, cmd CmdLeaveUpdate) (EventLeaveUpdated, error)
+
+	// LeaveDelete is an usecase to delete leave
+	LeaveDelete(ctx context.Context, cmd CmdLeaveDelete) (EventLeaveDeleted, error)
+
+	// LeaveList is an usecase to list leave
+	LeaveList(ctx context.Context, cmd CmdLeaveList) (EventLeaveListed, error)
+
+	// AttendanceStatistics is an usecase to get attendance statistics
+	AttendanceStatistics(ctx context.Context, cmd CmdAttendanceStatistics) (EventAttendanceStatistics, error)
 }
