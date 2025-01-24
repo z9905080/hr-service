@@ -2,6 +2,7 @@ package po
 
 import (
 	"github.com/z9905080/hr_service/internal/domain/entity"
+	gormTableValidator "github.com/z9905080/hr_service/pkg/gorm_table_validator"
 	"gorm.io/gorm"
 	"time"
 )
@@ -17,6 +18,8 @@ type EmployeeUpdatePo struct {
 func (*EmployeeUpdatePo) TableName() string {
 	return "employee"
 }
+
+var _ gormTableValidator.InfUpdatePo[entity.EmployeeUpdate] = (*EmployeeUpdatePo)(nil)
 
 func NewEmployeeUpdatePo(e entity.EmployeeUpdate) *EmployeeUpdatePo {
 	return &EmployeeUpdatePo{

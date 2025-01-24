@@ -30,7 +30,26 @@ func (e *employeeImpl) QueryEmployee(employee entity.Employee) (entity.Employee,
 func (e *employeeImpl) UpdateEmployee(data entity.EmployeeUpdate) (entity.Employee, error) {
 	updatePo := po.NewEmployeeUpdatePo(data)
 
-	if err := e.db.Model(&po.EmployeeUpdatePo{}).Where("id = ?", data.ID).Updates(updatePo.ToUpdateMap()).Error; err != nil {
+	err := e.db.Transaction(func(tx *gorm.DB) error {
+		// check if the data is existed
+		var employeePo po.EmployeePo
+		if err := tx.Where("id = ?", data.ID).First(&employeePo).Error; err != nil {
+			return err
+		}
+
+		// check if the employee ID is the same
+		if employeePo.ID != uint(data.ID) {
+			return gorm.ErrRecordNotFound
+		}
+
+		// update the data
+		if err := tx.Model(&po.EmployeeUpdatePo{}).Where("id = ?", data.ID).Updates(updatePo.ToUpdateMap()).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
 		return entity.Employee{}, err
 	}
 

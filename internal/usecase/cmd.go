@@ -51,11 +51,12 @@ func (c *CmdEmployeeQuery) Validate() error {
 }
 
 type CmdEmployeeUpdate struct {
-	EmployeeID    int
-	EmployeeName  *string
-	EmployeeBirth *time.Time
-	EmployeeRole  *string
-	EmployeeEmail *string
+	EmployeeID     int
+	EmployeeName   *string
+	EmployeeBirth  *time.Time
+	EmployeeRole   *string
+	EmployeeEmail  *string
+	EmployeeStatus *string
 }
 
 func (c *CmdEmployeeUpdate) Validate() error {
@@ -89,5 +90,107 @@ func (c *CmdEmployeeDelete) Validate() error {
 		return errors.New("employee id is invalid")
 	}
 
+	return nil
+}
+
+// Pagination is used to limit the number of data returned
+type Pagination struct {
+	Page  int
+	Limit int
+}
+
+type Sorter struct {
+	Field string
+	Order string
+}
+
+type CmdEmployeeList struct {
+	Pagination Pagination
+	Sorter     Sorter
+}
+
+func (c *CmdEmployeeList) Validate() error {
+	if c.Pagination.Page < 0 {
+		return errors.New("page number is invalid")
+	}
+
+	if c.Pagination.Limit < 0 {
+		return errors.New("limit number is invalid")
+	}
+
+	//TODO: validate sorter field and order
+
+	return nil
+}
+
+type CmdDepartmentAdd struct {
+	DepartmentName string
+}
+
+func (c *CmdDepartmentAdd) Validate() error {
+	if c.DepartmentName == "" {
+		return errors.New("department name is required")
+	}
+
+	return nil
+}
+
+type CmdDepartmentQuery struct {
+	DepartmentID int
+}
+
+func (c *CmdDepartmentQuery) Validate() error {
+	if c.DepartmentID <= 0 {
+		return errors.New("department id is invalid")
+	}
+
+	return nil
+}
+
+type CmdDepartmentUpdate struct {
+	DepartmentID   int
+	DepartmentName *string
+}
+
+func (c *CmdDepartmentUpdate) Validate() error {
+	if c.DepartmentID <= 0 {
+		return errors.New("department id is invalid")
+	}
+
+	// NIT: because just one field to update, we can remove this validation
+	if c.DepartmentName == nil {
+		return errors.New("at least one field to update")
+	}
+
+	return nil
+}
+
+type CmdDepartmentDelete struct {
+	DepartmentID int
+}
+
+func (c *CmdDepartmentDelete) Validate() error {
+	if c.DepartmentID <= 0 {
+		return errors.New("department id is invalid")
+	}
+
+	return nil
+}
+
+type CmdDepartmentList struct {
+	Pagination Pagination
+	Sorter     Sorter
+}
+
+func (c *CmdDepartmentList) Validate() error {
+	if c.Pagination.Page < 0 {
+		return errors.New("page number is invalid")
+	}
+
+	if c.Pagination.Limit < 0 {
+		return errors.New("limit number is invalid")
+	}
+
+	// TODO: validate sorter field and order
 	return nil
 }

@@ -9,8 +9,154 @@ import (
 )
 
 type usecase struct {
-	employeeRepo repository.EmployeeRepository
-	log          logger.InfLogger
+	employeeRepo   repository.EmployeeRepository
+	departmentRepo repository.DepartmentRepository
+	log            logger.InfLogger
+}
+
+func (u *usecase) DepartmentAdd(ctx context.Context, department CmdDepartmentAdd) (EventDepartmentAdded, error) {
+	if err := department.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "DepartmentAdd: %v", err)
+		return EventDepartmentAdded{}, err
+	}
+
+	e := entity.Department{
+		Name: department.DepartmentName,
+	}
+
+	result, err := u.departmentRepo.AddDepartment(e)
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "DepartmentAdd: %v", err)
+	}
+
+	return EventDepartmentAdded{
+		EventDepartment: EventDepartment{
+			DepartmentID:   result.ID,
+			DepartmentName: result.Name,
+		},
+	}, nil
+}
+
+func (u *usecase) DepartmentQuery(ctx context.Context, departmentID CmdDepartmentQuery) (EventDepartmentQueried, error) {
+	if err := departmentID.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "DepartmentQuery: %v", err)
+		return EventDepartmentQueried{}, err
+	}
+
+	data, err := u.departmentRepo.QueryDepartment(entity.Department{ID: departmentID.DepartmentID})
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "DepartmentQuery: %v", err)
+	}
+
+	return EventDepartmentQueried{
+		EventDepartment: EventDepartment{
+			DepartmentID:   data.ID,
+			DepartmentName: data.Name,
+		},
+	}, nil
+
+}
+
+func (u *usecase) DepartmentUpdate(ctx context.Context, department CmdDepartmentUpdate) (EventDepartmentUpdated, error) {
+	if err := department.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "DepartmentUpdate: %v", err)
+		return EventDepartmentUpdated{}, err
+	}
+
+	data, err := u.departmentRepo.UpdateDepartment(entity.DepartmentUpdate{
+		ID:   department.DepartmentID,
+		Name: department.DepartmentName,
+	})
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "DepartmentUpdate: %v", err)
+	}
+
+	return EventDepartmentUpdated{
+		EventDepartment: EventDepartment{
+			DepartmentID:   data.ID,
+			DepartmentName: data.Name,
+		},
+	}, nil
+}
+
+func (u *usecase) DepartmentDelete(ctx context.Context, departmentID CmdDepartmentDelete) (EventDepartmentDeleted, error) {
+	if err := departmentID.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "DepartmentDelete: %v", err)
+		return EventDepartmentDeleted{}, err
+	}
+
+	err := u.departmentRepo.DeleteDepartment(entity.Department{ID: departmentID.DepartmentID})
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "DepartmentDelete: %v", err)
+	}
+
+	return EventDepartmentDeleted{
+		DepartmentID: departmentID.DepartmentID,
+		Status:       "deleted",
+	}, nil
+}
+
+func (u *usecase) DepartmentList(ctx context.Context, departmentList CmdDepartmentList) (EventDepartmentListed, error) {
+	if err := departmentList.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "DepartmentList: %v", err)
+		return EventDepartmentListed{}, err
+	}
+
+	data, err := u.departmentRepo.ListDepartment(departmentList.Pagination.Limit, departmentList.Pagination.Page, departmentList.Sorter.Field, departmentList.Sorter.Order)
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "DepartmentList: %v", err)
+	}
+
+	var list []EventDepartment
+	for _, v := range data {
+		list = append(list, EventDepartment{
+			DepartmentID:   v.ID,
+			DepartmentName: v.Name,
+		})
+	}
+
+	return EventDepartmentListed{
+		DepartmentList: list,
+	}, err
+}
+
+func (u *usecase) EmployeeList(ctx context.Context, employeeList CmdEmployeeList) (EventEmployeeListed, error) {
+	if err := employeeList.Validate(); err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "EmployeeList: %v", err)
+		return EventEmployeeListed{}, err
+	}
+
+	data, err := u.employeeRepo.ListEmployee(employeeList.Pagination.Limit, employeeList.Pagination.Page, employeeList.Sorter.Field, employeeList.Sorter.Order)
+	if err != nil {
+		// record error log
+		u.log.ErrorF(ctx, "EmployeeList: %v", err)
+	}
+
+	var list []EventEmployee
+	for _, v := range data {
+		list = append(list, EventEmployee{
+			EmployeeID:    v.ID,
+			EmployeeName:  v.Name,
+			EmployeeBirth: v.Birth.Format("2006-01-02"),
+			EmployeeRole:  v.Role,
+			EmployeeEmail: v.Email,
+		})
+	}
+
+	return EventEmployeeListed{
+		EmployeeList: list,
+	}, err
 }
 
 func (u *usecase) EmployeeDelete(ctx context.Context, cmd CmdEmployeeDelete) (EventEmployeeDeleted, error) {

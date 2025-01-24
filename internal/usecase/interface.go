@@ -7,7 +7,6 @@ import "context"
 // - Employee ID generation and management
 // - Department relationship maintenance
 // - Position management
-// - Employee status tracking (active/resigned/on leave)
 
 // Attendance Management
 // - Attendance record registration and query
@@ -32,14 +31,12 @@ import "context"
 // - Assessment report generation
 // - Performance tracking
 
-// Training & Development
-// - Training course management
-// - Training registration and approval
-// - Training record management
-// - Certification management
-// - Training effectiveness evaluation
-
 type InfAPIUsecase interface {
+	infEmployeeUC
+	infDepartmentUC
+}
+
+type infEmployeeUC interface {
 	// EmployeeAdd is an usecase to add employee
 	// NIT: don't use pointer struct as parameter, use value struct instead
 	//      in this case, use CmdEmployeeAdd instead of *CmdEmployeeAdd
@@ -54,4 +51,24 @@ type InfAPIUsecase interface {
 
 	// EmployeeDelete is an usecase to delete employee
 	EmployeeDelete(ctx context.Context, employeeID CmdEmployeeDelete) (EventEmployeeDeleted, error)
+
+	// EmployeeList is an usecase to list employee
+	EmployeeList(ctx context.Context, employeeList CmdEmployeeList) (EventEmployeeListed, error)
+}
+
+type infDepartmentUC interface {
+	// DepartmentAdd is an usecase to add department
+	DepartmentAdd(ctx context.Context, department CmdDepartmentAdd) (EventDepartmentAdded, error)
+
+	// DepartmentQuery is an usecase to query department
+	DepartmentQuery(ctx context.Context, departmentID CmdDepartmentQuery) (EventDepartmentQueried, error)
+
+	// DepartmentUpdate is an usecase to update department
+	DepartmentUpdate(ctx context.Context, department CmdDepartmentUpdate) (EventDepartmentUpdated, error)
+
+	// DepartmentDelete is an usecase to delete department
+	DepartmentDelete(ctx context.Context, departmentID CmdDepartmentDelete) (EventDepartmentDeleted, error)
+
+	// DepartmentList is an usecase to list department
+	DepartmentList(ctx context.Context, departmentList CmdDepartmentList) (EventDepartmentListed, error)
 }
