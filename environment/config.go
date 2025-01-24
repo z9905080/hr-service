@@ -7,8 +7,9 @@ import (
 
 type Config struct {
 	Http struct {
-		Port string
-	}
+		Port string `json:"port"`
+	} `json:"http"`
+	LogLevel string `json:"log_level"`
 }
 type ConfigPath string
 

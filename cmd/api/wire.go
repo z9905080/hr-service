@@ -5,10 +5,11 @@ package api
 
 import (
 	"context"
-
 	"github.com/google/wire"
 )
 
 func Initialize(ctx context.Context) (*App, func(), error) {
-	wire.Struct(new(App), "*")
+	wire.Build(wire.Struct(new(App), "*"),
+		ProviderSet)
+	return &App{}, nil, nil
 }
