@@ -14,16 +14,37 @@ type impl struct {
 	logger logger.InfLogger
 }
 
+func (i *impl) QueryAttendanceByEmployeeID(employeeID int, attendanceDate time.Time) ([]entity.Attendance, error) {
+	model := []po.AttendancePo{}
+	// query the data by employeeID and attendanceDate in the same day
+	if err := i.db.Where("employee_id = ? AND DATE_FORMAT(start_time, '%Y-%m-%d') = ?", employeeID, attendanceDate.Format("2006-01-02")).
+		Preload("Employee").Find(&model).Error; err != nil {
+		return nil, err
+	}
+
+	var result []entity.Attendance
+	for _, v := range model {
+		result = append(result, v.ToEntity())
+	}
+
+	return result, nil
+}
+
 func (i *impl) AddAttendance(e entity.Attendance) (entity.Attendance, error) {
 	model := po.NewAttendancePo(e)
-	if err := i.db.Preload("Employee").Create(&model).Error; err != nil {
+	if err := i.db.Create(&model).Error; err != nil {
+		return entity.Attendance{}, err
+	}
+
+	// query the created data
+	if err := i.db.Where("id = ?", model.ID).Preload("Employee").First(&model).Error; err != nil {
 		return entity.Attendance{}, err
 	}
 
 	return model.ToEntity(), nil
 }
 
-func (i *impl) QueryAttendance(e entity.Attendance) (entity.Attendance, error) {
+func (i *impl) QueryAttendanceByID(e entity.Attendance) (entity.Attendance, error) {
 	var model po.AttendancePo
 	if err := i.db.Where("id = ?", e.ID).Preload("Employee").First(&model).Error; err != nil {
 		return entity.Attendance{}, err
@@ -157,7 +178,12 @@ func (i *impl) ListOvertime(employeeID *int, limit int, page int, field string, 
 
 func (i *impl) AddLeave(leave entity.Leave) (entity.Leave, error) {
 	addPo := po.NewLeavePo(leave)
-	if err := i.db.Preload("Employee").Create(&addPo).Error; err != nil {
+	if err := i.db.Create(&addPo).Error; err != nil {
+		return entity.Leave{}, err
+	}
+
+	// query the created data
+	if err := i.db.Where("id = ?", addPo.ID).Preload("Employee").First(&addPo).Error; err != nil {
 		return entity.Leave{}, err
 	}
 

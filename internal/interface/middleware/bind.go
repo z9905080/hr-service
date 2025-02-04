@@ -29,13 +29,13 @@ func (c *C) GetQuery(key string) string {
 
 func (c *C) BindJSON(obj interface{}) error {
 
-	// bind uri
-	if err := c.c.ShouldBindUri(obj); err != nil {
+	// bind json
+	if err := c.c.ShouldBindJSON(obj); err != nil {
 		return err
 	}
 
-	// bind json
-	if err := c.c.ShouldBindJSON(obj); err != nil {
+	// bind uri
+	if err := c.c.ShouldBindUri(obj); err != nil {
 		return err
 	}
 

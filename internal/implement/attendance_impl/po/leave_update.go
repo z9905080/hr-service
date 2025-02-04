@@ -29,7 +29,7 @@ func (d *LeaveUpdatePo) ToUpdateMap() map[string]interface{} {
 	}
 
 	if len(m) > 0 {
-		m["updated_at"] = d.UpdatedAt
+		m["updated_at"] = time.Now()
 	}
 
 	return m

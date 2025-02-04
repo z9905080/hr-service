@@ -9,6 +9,7 @@ package api
 import (
 	"context"
 	"github.com/z9905080/hr_service/environment"
+	"github.com/z9905080/hr_service/internal/implement/attendance_impl"
 	"github.com/z9905080/hr_service/internal/implement/department_impl"
 	"github.com/z9905080/hr_service/internal/implement/employee_impl"
 	"github.com/z9905080/hr_service/internal/infra"
@@ -30,7 +31,8 @@ func Initialize(ctx context.Context) (*App, error) {
 	employeeRepository := employee_impl.NewEmployeeImpl(db)
 	departmentRepository := department_impl.NewDepartmentImpl(db)
 	infLogger := logger.NewLogger(config)
-	infAPIUsecase := usecase.NewUsecase(employeeRepository, departmentRepository, infLogger)
+	attendanceRepository := attendance_impl.NewAttendanceImpl(db, infLogger)
+	infAPIUsecase := usecase.NewUsecase(employeeRepository, departmentRepository, attendanceRepository, infLogger)
 	srvHandler := handler.NewGinHandler(infAPIUsecase)
 	httpHandler := adapter.NewHTTPAdapter(srvHandler)
 	app := NewApp(httpHandler, config)

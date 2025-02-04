@@ -16,31 +16,46 @@ var Ver20250124_INIT = &gormigrate.Migration{
 		// create table employee
 		employeeModel := employeePo.EmployeePo{}
 		if !db.Migrator().HasTable(employeeModel) {
-			return db.AutoMigrate(&employeeModel)
+			err := db.AutoMigrate(&employeeModel)
+			if err != nil {
+				return err
+			}
 		}
 
 		// create table department
 		departmentModel := departmentPo.DepartmentPo{}
 		if !db.Migrator().HasTable(departmentModel) {
-			return db.AutoMigrate(&departmentModel)
+			err := db.AutoMigrate(&departmentModel)
+			if err != nil {
+				return err
+			}
 		}
 
 		// create table attendance
 		attendanceModel := attendancePo.AttendancePo{}
 		if !db.Migrator().HasTable(attendanceModel) {
-			return db.AutoMigrate(&attendanceModel)
+			err := db.AutoMigrate(&attendanceModel)
+			if err != nil {
+				return err
+			}
 		}
 
 		// create table overtime
 		overtimeModel := attendancePo.OvertimePo{}
 		if !db.Migrator().HasTable(overtimeModel) {
-			return db.AutoMigrate(&overtimeModel)
+			err := db.AutoMigrate(&overtimeModel)
+			if err != nil {
+				return err
+
+			}
 		}
 
 		// create table leave
 		leaveModel := attendancePo.LeavePo{}
 		if !db.Migrator().HasTable(leaveModel) {
-			return db.AutoMigrate(&leaveModel)
+			err := db.AutoMigrate(&leaveModel)
+			if err != nil {
+			}
 		}
 
 		return nil
@@ -52,31 +67,41 @@ var Ver20250124_INIT = &gormigrate.Migration{
 		// drop table employee
 		employeeModel := employeePo.EmployeePo{}
 		if db.Migrator().HasTable(employeeModel) {
-			return db.Migrator().DropTable(employeeModel)
+			if err := db.Migrator().DropTable(employeeModel); err != nil {
+				return err
+			}
 		}
 
 		// drop table department
 		departmentModel := departmentPo.DepartmentPo{}
 		if db.Migrator().HasTable(departmentModel) {
-			return db.Migrator().DropTable(departmentModel)
+			if err := db.Migrator().DropTable(departmentModel); err != nil {
+				return err
+			}
 		}
 
 		// drop table attendance
 		attendanceModel := attendancePo.AttendancePo{}
 		if db.Migrator().HasTable(attendanceModel) {
-			return db.Migrator().DropTable(attendanceModel)
+			if err := db.Migrator().DropTable(attendanceModel); err != nil {
+				return err
+			}
 		}
 
 		// drop table overtime
 		overtimeModel := attendancePo.OvertimePo{}
 		if db.Migrator().HasTable(overtimeModel) {
-			return db.Migrator().DropTable(overtimeModel)
+			if err := db.Migrator().DropTable(overtimeModel); err != nil {
+				return err
+			}
 		}
 
 		// drop table leave
 		leaveModel := attendancePo.LeavePo{}
 		if db.Migrator().HasTable(leaveModel) {
-			return db.Migrator().DropTable(leaveModel)
+			if err := db.Migrator().DropTable(leaveModel); err != nil {
+				return err
+			}
 		}
 
 		return nil

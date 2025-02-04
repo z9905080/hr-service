@@ -10,10 +10,10 @@ import (
 
 type LeavePo struct {
 	gorm.Model
-	EmployeeID   int                   `gorm:"column:employee_id; not null; index; foreignkey:employee_id; references:employee(id)"`
-	StartTime    time.Time             `gorm:"column:start_time; not null"`
-	EndTime      time.Time             `gorm:"column:end_time; not null"`
-	EmployeeInfo employeePo.EmployeePo `gorm:"foreignKey:EmployeeID; references:ID"`
+	EmployeeID int                   `gorm:"column:employee_id; not null; index; foreignkey:employee_id; references:employee(id)"`
+	StartTime  time.Time             `gorm:"column:start_time; not null"`
+	EndTime    time.Time             `gorm:"column:end_time; not null"`
+	Employee   employeePo.EmployeePo `gorm:"foreignKey:EmployeeID; references:ID"`
 }
 
 func (d *LeavePo) TableName() string {
@@ -24,7 +24,7 @@ func (d *LeavePo) ToEntity() entity.Leave {
 	return entity.Leave{
 		ID:           int(d.ID),
 		EmployeeID:   d.EmployeeID,
-		EmployeeInfo: d.EmployeeInfo.ToEntity(),
+		EmployeeInfo: d.Employee.ToEntity(),
 		LeaveStart:   d.StartTime,
 		LeaveEnd:     d.EndTime,
 	}

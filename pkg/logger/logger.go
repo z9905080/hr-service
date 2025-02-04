@@ -91,7 +91,7 @@ func NewLogger(config environment.Config) InfLogger {
 		),
 	)
 
-	s := zap.New(core)
+	s := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
 
 	return &logger{
 		zap:      s,

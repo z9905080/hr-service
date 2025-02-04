@@ -15,7 +15,6 @@ func NewApiCmd() *cobra.Command {
 			exec()
 		},
 	}
-	apiCmd.PersistentFlags().StringVar((*string)(&environment.CnfPath), "config", "./environment/local_dev/config.json", "config file")
 	return apiCmd
 }
 

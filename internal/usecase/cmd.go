@@ -198,8 +198,8 @@ func (c *CmdDepartmentList) Validate() error {
 
 type CmdAttendanceAdd struct {
 	EmployeeID      int
-	AttendanceStart time.Time
-	AttendanceEnd   *time.Time
+	AttendanceStart string
+	AttendanceEnd   *string
 	AttendanceType  enum.AttendanceType
 }
 
@@ -209,13 +209,32 @@ func (c *CmdAttendanceAdd) Validate() error {
 	}
 
 	// validate attendance date
-	if c.AttendanceStart.IsZero() {
+	// convert string to time
+	startTime, err := time.Parse(time.RFC3339, c.AttendanceStart)
+	if err != nil {
+		return errors.New("attendance start is invalid")
+	}
+
+	if startTime.IsZero() {
 		return errors.New("attendance start is required")
 	}
 
 	// validate attendance end date if not nil
-	if c.AttendanceEnd != nil && c.AttendanceEnd.IsZero() {
-		return errors.New("attendance end date is required")
+	if c.AttendanceEnd != nil {
+		// convert string to time
+		endTime, err := time.Parse(time.RFC3339, *c.AttendanceEnd)
+		if err != nil {
+			return errors.New("attendance end is invalid")
+		}
+
+		if endTime.IsZero() {
+			return errors.New("attendance end is required if not nil")
+		}
+
+		// check if end date is before start date
+		if endTime.Before(startTime) {
+			return errors.New("attendance end is before start date")
+		}
 	}
 
 	// validate attendance type
@@ -224,7 +243,7 @@ func (c *CmdAttendanceAdd) Validate() error {
 	}
 
 	// validate attendance type
-	if c.AttendanceType.IsValid() {
+	if !c.AttendanceType.IsValid() {
 		return errors.New("attendance type is invalid")
 	}
 
@@ -246,8 +265,8 @@ func (c *CmdAttendanceQuery) Validate() error {
 type CmdAttendanceUpdate struct {
 	AttendanceID    int
 	EmployeeID      *int // 可能只有 admin 才能改非自己的考勤
-	AttendanceStart *time.Time
-	AttendanceEnd   *time.Time
+	AttendanceStart *string
+	AttendanceEnd   *string
 	AttendanceType  *enum.AttendanceType
 }
 
@@ -260,15 +279,43 @@ func (c *CmdAttendanceUpdate) Validate() error {
 		return errors.New("employee id is invalid")
 	}
 
-	if c.AttendanceStart != nil && c.AttendanceStart.IsZero() {
-		return errors.New("attendance date is required")
+	if c.AttendanceStart != nil {
+		// convert string to time
+		startTime, err := time.Parse(time.RFC3339, *c.AttendanceStart)
+		if err != nil {
+			return errors.New("attendance start is invalid")
+		}
+
+		if startTime.IsZero() {
+			return errors.New("attendance start is required if not nil")
+		}
 	}
 
-	if c.AttendanceEnd != nil && c.AttendanceEnd.IsZero() {
-		return errors.New("attendance end date is required")
+	if c.AttendanceEnd != nil {
+		// convert string to time
+		endTime, err := time.Parse(time.RFC3339, *c.AttendanceEnd)
+		if err != nil {
+			return errors.New("attendance end is invalid")
+		}
+
+		if endTime.IsZero() {
+			return errors.New("attendance end is required if not nil")
+		}
+
+		// check if end date is before start date
+		if c.AttendanceStart != nil {
+			startTime, err := time.Parse(time.RFC3339, *c.AttendanceStart)
+			if err != nil {
+				return errors.New("attendance start is invalid")
+			}
+
+			if endTime.Before(startTime) {
+				return errors.New("attendance end is before start date if not nil")
+			}
+		}
 	}
 
-	if c.AttendanceType != nil && c.AttendanceType.IsValid() {
+	if c.AttendanceType != nil && !c.AttendanceType.IsValid() {
 		return errors.New("attendance type is invalid")
 	}
 
@@ -450,7 +497,7 @@ func (c *CmdLeaveAdd) Validate() error {
 		return errors.New("leave type is required")
 	}
 
-	if c.LeaveType.IsValid() {
+	if !c.LeaveType.IsValid() {
 		return errors.New("leave type is invalid")
 	}
 

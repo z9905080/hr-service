@@ -7,7 +7,8 @@ import (
 
 type AttendanceRepository interface {
 	AddAttendance(attendance entity.Attendance) (entity.Attendance, error)
-	QueryAttendance(attendance entity.Attendance) (entity.Attendance, error)
+	QueryAttendanceByID(attendance entity.Attendance) (entity.Attendance, error)
+	QueryAttendanceByEmployeeID(employeeID int, attendanceDate time.Time) ([]entity.Attendance, error)
 	UpdateAttendance(data entity.AttendanceUpdate) (entity.Attendance, error)
 	DeleteAttendance(data entity.Attendance) error
 	ListAttendance(employeeID *int, limit int, page int, field string, order string) ([]entity.Attendance, error)

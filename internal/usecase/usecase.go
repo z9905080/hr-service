@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"github.com/z9905080/hr_service/internal/domain/entity"
 	"github.com/z9905080/hr_service/internal/domain/repository"
 	"github.com/z9905080/hr_service/pkg/logger"
@@ -22,10 +23,35 @@ func (u *usecase) AttendanceAdd(ctx context.Context, cmd CmdAttendanceAdd) (Even
 		return EventAttendanceAdded{}, err
 	}
 
+	start := func() time.Time {
+		// ignore error because it's already validated
+		t, _ := time.Parse(time.RFC3339, cmd.AttendanceStart)
+		return t
+	}()
 	e := entity.Attendance{
 		EmployeeID:      cmd.EmployeeID,
-		AttendanceStart: cmd.AttendanceStart,
-		AttendanceEnd:   cmd.AttendanceEnd,
+		AttendanceStart: start,
+		AttendanceEnd: func() *time.Time {
+			if cmd.AttendanceEnd == nil {
+				return nil
+			}
+
+			t, _ := time.Parse(time.RFC3339, *cmd.AttendanceEnd)
+			return &t
+
+		}(),
+	}
+
+	// get the latest attendance
+	// if the latest attendance in start, then return error
+	id := cmd.EmployeeID
+	attendanceList, err := u.attendanceRepo.QueryAttendanceByEmployeeID(id, start)
+	if err != nil {
+		return EventAttendanceAdded{}, err
+	}
+
+	if len(attendanceList) > 0 {
+		return EventAttendanceAdded{}, errors.New("the date has attendance")
 	}
 
 	result, err := u.attendanceRepo.AddAttendance(e)
@@ -52,7 +78,7 @@ func (u *usecase) AttendanceQuery(ctx context.Context, cmd CmdAttendanceQuery) (
 		return EventAttendanceQueried{}, err
 	}
 
-	data, err := u.attendanceRepo.QueryAttendance(entity.Attendance{ID: cmd.AttendanceID})
+	data, err := u.attendanceRepo.QueryAttendanceByID(entity.Attendance{ID: cmd.AttendanceID})
 	if err != nil {
 		// record error log
 		u.log.ErrorF(ctx, "AttendanceQuery: %v", err)
@@ -77,10 +103,26 @@ func (u *usecase) AttendanceUpdate(ctx context.Context, cmd CmdAttendanceUpdate)
 	}
 
 	attendanceData := entity.AttendanceUpdate{
-		ID:              cmd.AttendanceID,
-		EmployeeID:      cmd.EmployeeID,
-		AttendanceStart: cmd.AttendanceStart,
-		AttendanceEnd:   cmd.AttendanceEnd,
+		ID:         cmd.AttendanceID,
+		EmployeeID: cmd.EmployeeID,
+		AttendanceStart: func() *time.Time {
+			if cmd.AttendanceStart == nil {
+				return nil
+			}
+
+			// ignore error because it's already validated
+			t, _ := time.Parse(time.RFC3339, *cmd.AttendanceStart)
+			return &t
+		}(),
+		AttendanceEnd: func() *time.Time {
+			if cmd.AttendanceEnd == nil {
+				return nil
+			}
+
+			// ignore error because it's already validated
+			t, _ := time.Parse(time.RFC3339, *cmd.AttendanceEnd)
+			return &t
+		}(),
 	}
 
 	data, err := u.attendanceRepo.UpdateAttendance(attendanceData)
@@ -575,6 +617,12 @@ func (u *usecase) DepartmentList(ctx context.Context, departmentList CmdDepartme
 
 	return EventDepartmentListed{
 		DepartmentList: list,
+		Pagination: EventPagination{
+			Page:      departmentList.Pagination.Page,
+			Limit:     departmentList.Pagination.Limit,
+			Total:     0, // TODO: implement total count
+			TotalPage: 0, // TODO: implement total page
+		},
 	}, err
 }
 
@@ -604,6 +652,12 @@ func (u *usecase) EmployeeList(ctx context.Context, employeeList CmdEmployeeList
 
 	return EventEmployeeListed{
 		EmployeeList: list,
+		Pagination: EventPagination{
+			Page:      employeeList.Pagination.Page,
+			Limit:     employeeList.Pagination.Limit,
+			Total:     0, // TODO: implement total count
+			TotalPage: 0, // TODO: implement total page
+		},
 	}, err
 }
 
@@ -646,8 +700,8 @@ func (u *usecase) EmployeeUpdate(ctx context.Context, cmd CmdEmployeeUpdate) (Ev
 			return &t
 
 		}(),
-		Role:  nil,
-		Email: nil,
+		Role:  cmd.EmployeeRole,
+		Email: cmd.EmployeeEmail,
 	}
 
 	data, err := u.employeeRepo.UpdateEmployee(employeeData)
@@ -726,10 +780,11 @@ func (u *usecase) EmployeeAdd(ctx context.Context, cmd CmdEmployeeAdd) (EventEmp
 		}}, err
 }
 
-func NewUsecase(employeeRepo repository.EmployeeRepository, departmentRepo repository.DepartmentRepository, log logger.InfLogger) InfAPIUsecase {
+func NewUsecase(employeeRepo repository.EmployeeRepository, departmentRepo repository.DepartmentRepository, attendanceRepo repository.AttendanceRepository, log logger.InfLogger) InfAPIUsecase {
 	return &usecase{
 		employeeRepo:   employeeRepo,
 		departmentRepo: departmentRepo,
+		attendanceRepo: attendanceRepo,
 		log:            log,
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/z9905080/hr_service/internal/domain/entity"
 	gormTableValidator "github.com/z9905080/hr_service/pkg/gorm_table_validator"
 	"gorm.io/gorm"
+	"time"
 )
 
 type DepartmentUpdatePo struct {
@@ -29,7 +30,7 @@ func (d *DepartmentUpdatePo) ToUpdateMap() map[string]interface{} {
 	}
 
 	if len(m) > 0 {
-		m["updated_at"] = d.UpdatedAt
+		m["updated_at"] = time.Now()
 	}
 
 	return m
